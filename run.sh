@@ -2,9 +2,26 @@
 
 echo "Starting Real Estate Investment Calculator..."
 
+# Check if requirements are installed
+if [ ! -d "backend/venv" ]; then
+  echo "Setting up backend..."
+  cd backend
+  python3 -m venv venv
+  source venv/bin/activate
+  pip install -r requirements.txt
+  cd ..
+fi
+
+if [ ! -d "frontend/node_modules" ]; then
+  echo "Setting up frontend..."
+  cd frontend
+  npm install
+  cd ..
+fi
+
 # Function to check if port is in use
 check_port() {
-  if lsof -Pi :$1 -sTCP:LISTEN -t >/dev/null; then
+  if lsof -Pi :$1 -sTCP:LISTEN -t >/dev/null 2>/dev/null; then
     echo "Port $1 is already in use. Please free it or use different ports."
     exit 1
   fi

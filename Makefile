@@ -1,4 +1,11 @@
-.PHONY: run build-frontend run-backend
+.PHONY: run build-frontend run-backend install
+
+install:
+	@echo "Setting up backend..."
+	@cd backend && python3 -m venv venv
+	@bash -c "cd backend && source venv/bin/activate && pip install -r requirements.txt"
+	@echo "Setting up frontend..."
+	@cd frontend && npm install
 
 run: build-frontend
 	@echo "Starting Real Estate Investment Calculator..."
