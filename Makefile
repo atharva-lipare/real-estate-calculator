@@ -1,4 +1,4 @@
-.PHONY: run build-frontend run-backend install
+.PHONY: run build-frontend run-backend install stop
 
 install:
 	@echo "Setting up backend..."
@@ -7,11 +7,17 @@ install:
 	@echo "Setting up frontend..."
 	@cd frontend && npm install
 
+stop:
+	@echo "Stopping servers..."
+	@lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+	@lsof -ti:5000 | xargs kill -9 2>/dev/null || true
+	@echo "Servers stopped."
+
 run: build-frontend
 	@echo "Starting Real Estate Investment Calculator..."
 	@bash -c "cd backend && source venv/bin/activate && python app.py" &
 	@sleep 2
-	@bash -c "cd frontend && python3 -m http.server 3000" &
+	@bash -c "cd frontend/dist && python3 -m http.server 3000" &
 	@echo "App is running!"
 	@echo "Frontend: http://localhost:3000"
 	@echo "Backend: http://localhost:5000"
