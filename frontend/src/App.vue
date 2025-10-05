@@ -21,7 +21,8 @@ const form = ref({
   fd_rate: 7.9,
   equity_rate: 12,
   initial_deposit: 1000000,
-  annual_deposit_increase: 20
+  annual_deposit_increase: 20,
+  early_sell_years: null
 })
 
 const formatAmount = (value) => {
@@ -96,6 +97,10 @@ const calculate = async () => {
         <input v-model.number="form.tenure_years" type="number" />
       </div>
       <div class="form-group">
+        <label>Early Sell Years (optional):</label>
+        <input v-model.number="form.early_sell_years" type="number" :max="form.tenure_years" placeholder="Leave empty for full tenure" />
+      </div>
+      <div class="form-group">
         <label>Loan Type:</label>
         <select v-model="form.loan_type">
           <option value="normal">Normal (EMI)</option>
@@ -167,6 +172,7 @@ const calculate = async () => {
           <h3>Property Investment</h3>
           <p>Total Investment: ₹{{ result.property.total_investment.toLocaleString('en-IN') }} {{ formatAmount(result.property.total_investment) }}</p>
           <p>Total Interest Paid: ₹{{ result.property.total_interest_paid.toLocaleString('en-IN', {maximumFractionDigits: 2}) }} {{ formatAmount(result.property.total_interest_paid) }}</p>
+          <p>Final Property Value: ₹{{ result.property.final_property_value.toLocaleString('en-IN') }} {{ formatAmount(result.property.final_property_value) }}</p>
           <p>Total Return: ₹{{ result.property.total_return.toLocaleString('en-IN', {maximumFractionDigits: 2}) }} {{ formatAmount(result.property.total_return) }}</p>
         </div>
         <div class="result-card">

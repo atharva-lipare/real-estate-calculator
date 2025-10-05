@@ -19,7 +19,7 @@ def calculate_sip(monthly_investment, initial_investment, annual_rate, months):
     total_invested = initial_investment + monthly_investment * months
     return total_value - total_invested
 
-def calculate_property_returns(data):
+def calculate_property_returns(data, early_sell_years=None):
     loan_amount = data.get('loan_amount', 0)
     interest_rate = data.get('interest_rate', 0)
     tenure = data.get('tenure_years', 10)
@@ -31,6 +31,7 @@ def calculate_property_returns(data):
     annual_maintenance = data.get('annual_maintenance', 0)
 
     years = tenure
+    effective_years = early_sell_years if early_sell_years and early_sell_years < years else years
     cash_flows = []
     total_rent_income = 0
     total_maintenance = 0
@@ -43,7 +44,7 @@ def calculate_property_returns(data):
     deposit_increase = data.get('annual_deposit_increase', 0) / 100
     total_surplus = surplus if loan_type == 'overdraft' else 0
 
-    for year in range(1, years + 1):
+    for year in range(1, effective_years + 1):
         # Rent income
         annual_rent = current_rent * 12
         total_rent_income += annual_rent
@@ -65,7 +66,14 @@ def calculate_property_returns(data):
         total_loan_payment += annual_loan
         total_paid += annual_loan_full
 
-        net_cash_flow = annual_rent - annual_loan - maint
+        # Check if early sell this year
+        if year == effective_years and effective_years < years:
+            sell_price = property_value * (1 + annual_appreciation) ** year
+            net_sell = sell_price - max(0, remaining_loan)
+            net_cash_flow = annual_rent - annual_loan - maint + net_sell
+        else:
+            net_cash_flow = annual_rent - annual_loan - maint
+
         cash_flows.append(net_cash_flow)
 
         current_rent *= (1 + annual_rent_increase)
@@ -73,11 +81,16 @@ def calculate_property_returns(data):
             total_surplus += surplus
             surplus *= (1 + deposit_increase)
 
-    final_property_value = property_value * (1 + annual_appreciation) ** years
-    net_property_value = final_property_value - max(0, remaining_loan)
+    if effective_years == years:
+        final_property_value = property_value * (1 + annual_appreciation) ** years
+        appreciation = final_property_value - property_value
+        net_property_value = final_property_value - max(0, remaining_loan)
+    else:
+        final_property_value = sell_price
+        appreciation = sell_price - property_value
+        net_property_value = net_sell
 
     down_payment = data.get('property_value', 0) - data.get('loan_amount', 0)
-    appreciation = final_property_value - property_value
     total_rent = total_rent_income
     total_maint = total_maintenance
     total_investment = down_payment + total_paid
@@ -101,22 +114,26 @@ def calculate_property_returns(data):
 def calculate():
     data = request.json
     try:
-        property_result = calculate_property_returns(data)
+        early_sell_years = data.get('early_sell_years')
+        if early_sell_years and early_sell_years <= 0:
+            early_sell_years = None
+        years = data.get('tenure_years', 10)
+        if early_sell_years and early_sell_years > years:
+            early_sell_years = years
+        effective_years = early_sell_years if early_sell_years else years
+
+        property_result = calculate_property_returns(data, early_sell_years)
         # Investment amount for FD/equity is the down payment
         down_payment = data.get('property_value', 0) - data.get('loan_amount', 0)
         fd_rate = data.get('fd_rate', 6) / 100
         equity_rate = data.get('equity_rate', 10) / 100
-        years = data.get('tenure_years', 10)
-
-        fd_return = down_payment * fd_rate * years  # simple interest
-        equity_return = down_payment * (1 + equity_rate) ** years - down_payment
 
         # Calculate EMI
         loan_type = data.get('loan_type', 'normal')
         emi = calculate_emi(data.get('loan_amount', 0), data.get('interest_rate', 0), years)
 
-        # For FD/equity, invest down payment (+ OD deposits for overdraft) + monthly EMI as SIP
-        months = years * 12
+        # For FD/equity, invest down payment (+ OD deposits for overdraft) + monthly EMI as SIP for effective_years
+        months = effective_years * 12
         initial_invest = down_payment + (data.get('initial_deposit', 0) if loan_type == 'overdraft' else 0)
         total_od_invest = property_result.get('total_surplus', 0) if loan_type == 'overdraft' else 0
         fd_return = calculate_sip(emi, initial_invest, fd_rate * 100, months)
