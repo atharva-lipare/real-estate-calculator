@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { Bar, Line } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineElement, PointElement } from 'chart.js'
+import Portfolio from './components/Portfolio.vue'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
@@ -40,6 +41,7 @@ const result = ref(null)
 const chartData = ref(null)
 const cashflowData = ref(null)
 const loading = ref(false)
+const activeTab = ref('calculator')
 
 const calculate = async () => {
   loading.value = true
@@ -81,8 +83,13 @@ const calculate = async () => {
 
 <template>
   <div class="app">
-    <h1>Real Estate Investment Return Calculator</h1>
-    <form @submit.prevent="calculate" class="form">
+    <h1>Investment Tools</h1>
+    <div class="tabs">
+      <button @click="activeTab = 'calculator'" :class="{ active: activeTab === 'calculator' }">🧮 Calculator</button>
+      <button @click="activeTab = 'portfolio'" :class="{ active: activeTab === 'portfolio' }">📊 My Portfolio</button>
+    </div>
+    <div v-if="activeTab === 'calculator'">
+      <form @submit.prevent="calculate" class="form">
       <div class="form-group">
         <label>Loan Amount:</label>
         <input v-model.number="form.loan_amount" type="number" />
@@ -187,38 +194,114 @@ const calculate = async () => {
         </div>
       </div>
     </div>
+   </div>
+   <div v-else-if="activeTab === 'portfolio'">
+     <Portfolio />
+   </div>
   </div>
 </template>
 
 <style scoped>
 .app {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 30px;
+  padding: 40px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.app::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="%23ffffff" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
 }
 
 h1 {
   text-align: center;
+  color: #ffffff;
+  margin-bottom: 40px;
+  font-size: 3em;
+  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+  font-weight: 700;
+  background: linear-gradient(45deg, #ffffff, #f8f9fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.tabs button {
+  padding: 15px 30px;
+  margin: 0 10px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tabs button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.tabs button:hover::before {
+  left: 100%;
+}
+
+.tabs button.active {
+  background: rgba(255, 255, 255, 0.9);
   color: #333;
-  margin-bottom: 30px;
-  font-size: 2.5em;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+}
+
+.tabs button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
 }
 
 .form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .form-group {
@@ -246,35 +329,40 @@ label {
 }
 
 input, select {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
   font-size: 1em;
-  transition: border-color 0.3s;
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  color: #333;
 }
 
 input:focus, select:focus {
   outline: none;
-  border-color: #42b883;
-  box-shadow: 0 0 5px rgba(66, 184, 131, 0.5);
+  border-color: #667eea;
+  box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+  background: white;
 }
 
 button {
-  padding: 12px;
-  background: linear-gradient(45deg, #42b883, #3498db);
+  padding: 15px 25px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 10px;
   font-size: 1.1em;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
   grid-column: span 2;
-  margin-top: 10px;
+  margin-top: 15px;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
 }
 
 button:disabled {
@@ -285,19 +373,23 @@ button:disabled {
 
 .chart-container {
   height: 400px;
-  margin: 30px 0;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  margin: 40px 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .results {
-  margin-top: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  margin-top: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .result-card {

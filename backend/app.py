@@ -1,9 +1,20 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 import math
+import os
+from kiteconnect import KiteConnect
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
+app.secret_key = 'your_secret_key_here'  # Change to a random secret in production
+
+load_dotenv()
+
+# Kite Connect Configuration
+KITE_API_KEY = os.getenv('KITE_API_KEY')
+KITE_API_SECRET = os.getenv('KITE_API_SECRET')
+kite = KiteConnect(api_key=KITE_API_KEY)
 
 def calculate_emi(principal, rate, tenure_years):
     monthly_rate = rate / 12 / 100
@@ -147,6 +158,35 @@ def calculate():
             'down_payment': down_payment
         }
         return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/kite/login_url', methods=['GET'])
+def get_login_url():
+    login_url = kite.login_url()
+    return jsonify({'login_url': login_url})
+
+@app.route('/kite/generate_session', methods=['POST'])
+def generate_session():
+    request_token = request.json.get('request_token')
+    if not request_token:
+        return jsonify({'error': 'request_token required'}), 400
+    try:
+        data = kite.generate_session(request_token, api_secret=KITE_API_SECRET)
+        session['access_token'] = data['access_token']
+        kite.set_access_token(data['access_token'])
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/kite/holdings', methods=['GET'])
+def get_holdings():
+    if 'access_token' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    kite.set_access_token(session['access_token'])
+    try:
+        holdings = kite.holdings()
+        return jsonify(holdings)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
