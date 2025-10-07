@@ -3,12 +3,15 @@ import { ref } from 'vue'
 import axios from 'axios'
 
 const holdings = ref([])
+const equityHoldings = ref([])
+const mfHoldings = ref([])
 const loading = ref(false)
 const loggedIn = ref(false)
 const requestToken = ref('')
 const totalInvested = ref(0)
 const totalValue = ref(0)
 const totalPnL = ref(0)
+const filter = ref('all') // 'all', 'equity', 'mutual_fund'
 let childWindow = null
 
 const login = async () => {
@@ -55,15 +58,61 @@ const fetchHoldings = async () => {
   loading.value = true
   try {
     const response = await axios.get('http://localhost:5000/kite/holdings', { withCredentials: true })
-    holdings.value = response.data
-    totalInvested.value = holdings.value.reduce((sum, h) => sum + (h.quantity * h.average_price), 0)
-    totalValue.value = holdings.value.reduce((sum, h) => sum + (h.quantity * h.last_price), 0)
-    totalPnL.value = holdings.value.reduce((sum, h) => sum + h.pnl, 0)
+    equityHoldings.value = response.data.equity || []
+    mfHoldings.value = response.data.mutual_fund || []
+    holdings.value = response.data.all || []
+
+    updateFilteredHoldings()
+    calculateTotals()
   } catch (error) {
     console.error(error)
   } finally {
     loading.value = false
   }
+}
+
+const updateFilteredHoldings = () => {
+  if (filter.value === 'all') {
+    holdings.value = equityHoldings.value.concat(mfHoldings.value)
+  } else if (filter.value === 'equity') {
+    holdings.value = equityHoldings.value
+  } else if (filter.value === 'mutual_fund') {
+    holdings.value = mfHoldings.value
+  }
+}
+
+const calculateTotals = () => {
+  const currentHoldings = holdings.value
+  totalInvested.value = currentHoldings.reduce((sum, h) => {
+    if (h.type === 'equity') {
+      return sum + (h.quantity * h.average_price)
+    } else if (h.type === 'mutual_fund') {
+      return sum + (h.quantity * h.average_price)
+    }
+    return sum
+  }, 0)
+  totalValue.value = currentHoldings.reduce((sum, h) => {
+    if (h.type === 'equity') {
+      return sum + (h.quantity * h.last_price)
+    } else if (h.type === 'mutual_fund') {
+      return sum + (h.quantity * h.last_price)
+    }
+    return sum
+  }, 0)
+  totalPnL.value = currentHoldings.reduce((sum, h) => {
+    if (h.type === 'equity') {
+      return sum + h.pnl
+    } else if (h.type === 'mutual_fund') {
+      return sum + h.pnl
+    }
+    return sum
+  }, 0)
+}
+
+const setFilter = (newFilter) => {
+  filter.value = newFilter
+  updateFilteredHoldings()
+  calculateTotals()
 }
 </script>
 
@@ -72,17 +121,22 @@ const fetchHoldings = async () => {
     <h2>My Portfolio</h2>
     <div v-if="loggedIn" class="portfolio-summary">
       <div class="summary-card">
-        <h3>💰 Total Invested</h3>
+        <h3>Total Invested</h3>
         <p>₹{{ totalInvested.toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</p>
       </div>
       <div class="summary-card">
-        <h3>📈 Total Value</h3>
+        <h3>Total Value</h3>
         <p>₹{{ totalValue.toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</p>
       </div>
       <div class="summary-card">
-        <h3>📊 Total P&L</h3>
+        <h3>Total P&L</h3>
         <p :class="{ negative: totalPnL < 0, neutral: totalPnL === 0 }">₹{{ totalPnL.toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</p>
       </div>
+    </div>
+    <div v-if="loggedIn" class="filters">
+      <button @click="setFilter('all')" :class="{ active: filter === 'all' }">All</button>
+      <button @click="setFilter('equity')" :class="{ active: filter === 'equity' }">Equity</button>
+      <button @click="setFilter('mutual_fund')" :class="{ active: filter === 'mutual_fund' }">Mutual Funds</button>
     </div>
     <button v-if="!loggedIn" @click="login">Login to Kite</button>
     <div v-if="!loggedIn" class="login-form">
@@ -95,19 +149,30 @@ const fetchHoldings = async () => {
       <table v-if="holdings.length" class="holdings-table">
         <thead>
           <tr>
-            <th>Symbol</th>
-            <th>Quantity</th>
-            <th>Average Price</th>
-            <th>Last Price</th>
+            <th>Instrument</th>
+            <th>Qty</th>
+            <th>Avg. Cost</th>
+            <th>LTP</th>
+            <th>Invested</th>
+            <th>Cur. val</th>
             <th>P&L</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="holding in holdings" :key="holding.instrument_token">
-            <td><a href="#" @click.prevent="openScreener(holding.tradingsymbol)" class="symbol-link">{{ holding.tradingsymbol }}</a></td>
+          <tr v-for="holding in holdings" :key="holding.instrument_token || holding.fund">
+            <td>
+              <span v-if="holding.type === 'equity'">
+                <a href="#" @click.prevent="openScreener(holding.tradingsymbol)" class="symbol-link">{{ holding.tradingsymbol }}</a>
+              </span>
+              <span v-else-if="holding.type === 'mutual_fund'">
+                {{ holding.fund || holding.scheme_name }}
+              </span>
+            </td>
             <td>{{ holding.quantity }}</td>
             <td>₹{{ holding.average_price.toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</td>
             <td>₹{{ holding.last_price.toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</td>
+            <td>₹{{ (holding.quantity * holding.average_price).toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</td>
+            <td>₹{{ (holding.quantity * holding.last_price).toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</td>
             <td :class="{ negative: holding.pnl < 0, neutral: holding.pnl === 0 }">₹{{ holding.pnl.toLocaleString('en-IN', {maximumFractionDigits: 2}) }}</td>
           </tr>
         </tbody>
@@ -118,26 +183,22 @@ const fetchHoldings = async () => {
 
 <style scoped>
 .portfolio {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 30px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 50%, #e0e6ed 100%);
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0a0a0a;
+  color: #ffffff;
   min-height: 100vh;
-  border-radius: 20px;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
 }
 
 .portfolio h2 {
   text-align: center;
-  color: #333;
-  font-size: 2.5em;
-  margin-bottom: 30px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-  background: linear-gradient(45deg, #42b883, #3498db);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
+  font-size: 1.8em;
+  margin-bottom: 20px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .login-form {
@@ -145,140 +206,155 @@ const fetchHoldings = async () => {
 }
 
 input {
-  padding: 12px;
-  margin-right: 15px;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  font-size: 1em;
-  transition: border-color 0.3s;
+  padding: 8px 12px;
+  margin-right: 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 0.9em;
+  background: #2a2a2a;
+  color: #ffffff;
+  width: 200px;
 }
 
 input:focus {
   outline: none;
-  border-color: #42b883;
-  box-shadow: 0 0 8px rgba(66, 184, 131, 0.3);
+  border-color: #2563eb;
 }
 
 button {
-  padding: 12px 20px;
-  background: linear-gradient(45deg, #42b883, #3498db);
+  padding: 8px 16px;
+  background: #2563eb;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  margin-right: 15px;
-  font-size: 1em;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(66, 184, 131, 0.3);
+  margin-right: 12px;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
 }
 
 button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(66, 184, 131, 0.4);
-}
-
-button:active {
-  transform: translateY(-1px);
+  background: #1d4ed8;
 }
 
 .portfolio-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin: 30px 0;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
 }
 
 .summary-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  background: #1a1a1a;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #333;
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid #e9ecef;
-}
-
-.summary-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .summary-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.2em;
-  color: #495057;
-  font-weight: 600;
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
+  color: #ccc;
+  font-weight: 500;
 }
 
 .summary-card p {
   margin: 0;
-  font-size: 1.4em;
-  font-weight: bold;
-  color: #28a745;
+  font-size: 1.2em;
+  font-weight: 600;
+  color: #10b981;
 }
 
 .summary-card p.negative {
-  color: #dc3545;
+  color: #ef4444;
 }
 
 .summary-card p.neutral {
-  color: #6c757d;
+  color: #6b7280;
+}
+
+.filters {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+
+.filters button {
+  padding: 6px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: transparent;
+  color: #888;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filters button.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.filters button:hover {
+  color: #ffffff;
+  background: #1e40af;
 }
 
 .loading {
   text-align: center;
-  margin: 30px 0;
-  font-size: 1.2em;
-  color: #42b883;
+  margin: 20px 0;
+  font-size: 1em;
+  color: #999;
 }
 
 .holdings-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 30px;
-  background: white;
-  border-radius: 15px;
+  margin-top: 20px;
+  background: #1a1a1a;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  border: 1px solid #333;
 }
 
 th, td {
   border: none;
-  padding: 15px;
+  padding: 12px;
   text-align: left;
+  border-bottom: 1px solid #333;
 }
 
 th {
-  background: linear-gradient(45deg, #42b883, #3498db);
-  color: white;
-  font-weight: 700;
-  font-size: 1.1em;
+  background: #2a2a2a;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 td {
-  color: #495057;
+  color: #ccc;
   font-weight: 500;
 }
 
-tr:nth-child(even) {
-  background-color: #f8f9fa;
-}
-
 tr:hover {
-  background-color: #e9ecef;
-  transition: background-color 0.3s ease;
+  background-color: #2a2a2a;
+  transition: background-color 0.2s ease;
 }
 </style>
 .symbol-link {
-  color: #42b883;
+  color: #60a5fa;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .symbol-link:hover {
+  color: #93c5fd;
   text-decoration: underline;
 }
 td.negative {

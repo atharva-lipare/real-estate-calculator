@@ -85,8 +85,8 @@ const calculate = async () => {
   <div class="app">
     <h1>Investment Tools</h1>
     <div class="tabs">
-      <button @click="activeTab = 'calculator'" :class="{ active: activeTab === 'calculator' }">🧮 Calculator</button>
-      <button @click="activeTab = 'portfolio'" :class="{ active: activeTab === 'portfolio' }">📊 My Portfolio</button>
+      <button @click="activeTab = 'calculator'" :class="{ active: activeTab === 'calculator' }">Calculator</button>
+      <button @click="activeTab = 'portfolio'" :class="{ active: activeTab === 'portfolio' }">Portfolio</button>
     </div>
     <div v-if="activeTab === 'calculator'">
       <form @submit.prevent="calculate" class="form">
@@ -203,105 +203,64 @@ const calculate = async () => {
 
 <style scoped>
 .app {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 40px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0a0a0a;
+  color: #ffffff;
   min-height: 100vh;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.app::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="%23ffffff" opacity="0.03"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  pointer-events: none;
 }
 
 h1 {
   text-align: center;
   color: #ffffff;
-  margin-bottom: 40px;
-  font-size: 3em;
-  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
-  font-weight: 700;
-  background: linear-gradient(45deg, #ffffff, #f8f9fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  z-index: 1;
+  margin-bottom: 24px;
+  font-size: 1.8em;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .tabs {
   display: flex;
   justify-content: center;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .tabs button {
-  padding: 15px 30px;
-  margin: 0 10px;
+  padding: 8px 16px;
+  margin: 0 4px;
   border: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-size: 1.1em;
-  font-weight: 600;
+  border-radius: 6px;
+  background: transparent;
+  color: #888;
+  font-size: 0.9em;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.tabs button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.tabs button:hover::before {
-  left: 100%;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 .tabs button.active {
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-  transform: translateY(-2px);
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
 }
 
 .tabs button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  color: #ffffff;
+  background: #1e40af;
 }
 
 .form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 25px;
-  margin-bottom: 40px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #333;
 }
 
 .form-group {
@@ -313,56 +272,60 @@ h1 {
 
 .amount-display {
   position: absolute;
-  right: 10px;
-  top: 35px;
-  font-size: 0.9em;
-  color: #666;
-  background: white;
-  padding: 0 5px;
+  right: 8px;
+  top: 30px;
+  font-size: 0.8em;
+  color: #999;
+  background: #1a1a1a;
+  padding: 0 4px;
   pointer-events: none;
 }
 
 label {
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 5px;
+  font-weight: 500;
+  color: #ccc;
+  margin-bottom: 4px;
+  font-size: 0.9em;
 }
 
 input, select {
-  padding: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  font-size: 1em;
-  background: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease;
-  color: #333;
+  padding: 8px 12px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 0.9em;
+  background: #2a2a2a;
+  color: #ffffff;
+  transition: border-color 0.2s ease;
+  width: 100%;
 }
 
 input:focus, select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
-  background: white;
+  border-color: #2563eb;
 }
 
 button {
-  padding: 15px 25px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  padding: 10px 16px;
+  background: #2563eb;
   color: white;
   border: none;
-  border-radius: 10px;
-  font-size: 1.1em;
-  font-weight: 600;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
   grid-column: span 2;
-  margin-top: 15px;
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  margin-top: 12px;
 }
 
 button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
+  background: #1d4ed8;
+}
+
+button:disabled {
+  background: #374151;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 button:disabled {
@@ -372,48 +335,40 @@ button:disabled {
 }
 
 .chart-container {
-  height: 400px;
-  margin: 40px 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  height: 320px;
+  margin: 20px 0;
+  background: #1a1a1a;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #333;
 }
 
 .results {
-  margin-top: 40px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 24px;
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #333;
 }
 
 .result-card {
-  background: #f8f9fa;
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border-left: 5px solid #42b883;
-  transition: transform 0.2s;
-}
-
-.result-card:hover {
-  transform: translateX(5px);
+  background: #2a2a2a;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 4px;
+  border-left: 3px solid #2563eb;
 }
 
 .result-card h3 {
-  margin: 0 0 10px 0;
-  color: #333;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+  font-size: 1em;
 }
 
 .result-card p {
   margin: 0;
-  font-size: 1.1em;
-  color: #666;
+  font-size: 0.9em;
+  color: #ccc;
 }
 
 .loading {
@@ -424,11 +379,12 @@ button:disabled {
 }
 
 .error {
-  background: #f8d7da;
-  color: #721c24;
-  padding: 15px;
-  border-radius: 5px;
-  border: 1px solid #f5c6cb;
+  background: #2a1a1a;
+  color: #ef4444;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #dc2626;
+  font-size: 0.9em;
 }
 
 @media (max-width: 600px) {

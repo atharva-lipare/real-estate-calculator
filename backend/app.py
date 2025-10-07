@@ -185,8 +185,35 @@ def get_holdings():
         return jsonify({'error': 'Not authenticated'}), 401
     kite.set_access_token(session['access_token'])
     try:
-        holdings = kite.holdings()
-        return jsonify(holdings)
+        # Get equity holdings
+        equity_holdings = kite.holdings()
+
+        # Get mutual fund holdings
+        mf_holdings = kite.mf_holdings()
+
+        # Add type field and calculate P&L for MF holdings
+        for holding in equity_holdings:
+            holding['type'] = 'equity'
+
+        for holding in mf_holdings:
+            holding['type'] = 'mutual_fund'
+            # Debug: print MF holding keys
+            print(f"MF holding keys: {list(holding.keys())}")
+            print(f"MF holding sample: {holding}")
+            # Calculate P&L for MF if not provided
+            if 'pnl' not in holding or holding.get('pnl') == 0:
+                quantity = holding.get('quantity', 0)
+                avg_price = holding.get('average_price', 0)
+                last_price = holding.get('last_price', 0)
+                invested = quantity * avg_price
+                current_value = quantity * last_price
+                holding['pnl'] = current_value - invested
+
+        return jsonify({
+            'equity': equity_holdings,
+            'mutual_fund': mf_holdings,
+            'all': equity_holdings + mf_holdings
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
