@@ -1,11 +1,25 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.4;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Kite-inspired Dark Mode Color Palette */
+  --kite-bg-primary: #0d0d0d;
+  --kite-bg-secondary: #1a1a1a;
+  --kite-bg-tertiary: #2a2a2a;
+  --kite-blue-primary: #387ed1;
+  --kite-blue-hover: #2c5aa0;
+  --kite-green: #1abc9c;
+  --kite-red: #e74c3c;
+  --kite-text-primary: #ffffff;
+  --kite-text-secondary: #cccccc;
+  --kite-text-muted: #888888;
+  --kite-border: #333333;
+  --kite-border-light: #444444;
+  --kite-shadow: rgba(0, 0, 0, 0.1);
+
+  color: var(--kite-text-primary);
+  background-color: var(--kite-bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,11 +29,12 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: var(--kite-blue-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--kite-blue-hover);
 }
 
 body {
@@ -28,52 +43,55 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--kite-bg-primary);
+  color: var(--kite-text-primary);
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 2.2em;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin: 0;
+  color: var(--kite-text-primary);
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
+  border-radius: 6px;
+  border: 1px solid var(--kite-border);
   padding: 0.6em 1.2em;
-  font-size: 1em;
+  font-size: 0.95em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--kite-bg-secondary);
+  color: var(--kite-text-primary);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px var(--kite-shadow);
 }
 button:hover {
-  border-color: #646cff;
+  background-color: var(--kite-bg-tertiary);
+  border-color: var(--kite-border-light);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
+  border-color: var(--kite-blue-primary);
+  box-shadow: 0 0 0 2px rgba(56, 126, 209, 0.2);
 }
 
 .card {
-  padding: 2em;
+  padding: 1.5em;
+  background: var(--kite-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--kite-border);
+  box-shadow: 0 2px 8px var(--kite-shadow);
 }
 
 #app {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+  background: var(--kite-bg-primary);
 }
