@@ -1,5 +1,7 @@
 # Real Estate vs FD vs Equity — Investment Calculator
 
+**Live: https://atharva-lipare.github.io/real-estate-calculator/**
+
 A calculator to compare returning from buying real estate on a loan against
 investing the equivalent cash in fixed deposits or equity. Models EMI,
 overdraft loans, rent income, maintenance, stamp duty, selling costs, LTCG
@@ -60,43 +62,20 @@ would you have?"
 
 ## Deployment
 
-The output of `npm run build` is a pure static site in `dist/`. It works on
-any static host.
+Deployed via GitHub Pages. The workflow at `.github/workflows/deploy.yml`
+builds and publishes on every push to `master`. No action needed on your
+end once the repo is set up — just push.
 
-### GitHub Pages (free, recommended)
+If forking this to deploy your own copy:
 
-A GitHub Actions workflow is already set up at
-`.github/workflows/deploy.yml`. One-time setup:
-
-1. Push to GitHub (on `master`).
+1. Make the fork public (GitHub Pages on free tier requires public repos).
 2. In the repo settings → **Pages** → Source: **GitHub Actions**.
-3. The workflow builds + deploys on every push to `master`.
+3. Push to `master`. The workflow passes `VITE_BASE=/<repo-name>/` so Vite
+   emits asset paths that match Pages' sub-path hosting.
 
-Your site will live at
-`https://<your-username>.github.io/<repo-name>/`.
-
-The workflow passes `VITE_BASE=/<repo-name>/` so Vite emits the correct
-asset paths for the sub-path hosting.
-
-### Vercel
-
-1. Push to GitHub.
-2. Go to [vercel.com/new](https://vercel.com/new), import the repo.
-3. Framework preset: Vite. Build command: `npm run build`. Output directory:
-   `dist`. Leave env vars empty — Vercel serves from root, so the default
-   `base: "/"` applies.
-4. Click Deploy.
-
-### Netlify
-
-1. Push to GitHub.
-2. Go to Netlify → Add new site → Import from Git.
-3. Build command: `npm run build`. Publish directory: `dist`.
-
-### Cloudflare Pages
-
-1. Connect the repo.
-2. Framework preset: Vite. Build command: `npm run build`. Output: `dist`.
+The output of `npm run build` is a pure static site in `dist/`, so any
+other static host (Vercel, Netlify, Cloudflare Pages, S3, …) also works
+without modification — leave `VITE_BASE` unset and they serve from root.
 
 ## Assumptions & caveats
 
