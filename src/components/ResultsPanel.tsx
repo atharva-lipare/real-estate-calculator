@@ -94,9 +94,10 @@ function StatRow({ label, value }: { label: string; value: string }) {
 export function ResultsPanel({ result }: Props) {
   const { property, fd, equity, effectiveYears } = result;
   const winner =
-    property.xirr >= fd.xirr && property.xirr >= equity.xirr
+    property.finalValue >= fd.finalValue &&
+    property.finalValue >= equity.finalValue
       ? "property"
-      : equity.xirr >= fd.xirr
+      : equity.finalValue >= fd.finalValue
       ? "equity"
       : "fd";
 
@@ -144,8 +145,8 @@ export function ResultsPanel({ result }: Props) {
           Property yearly net cash flow
         </h3>
         <p className="mb-4 text-xs text-fg-2">
-          Rent minus EMI, maintenance, OD top-ups. Final year includes sale
-          proceeds.
+          Rent minus EMI and maintenance each year. Final year includes net
+          sale proceeds (after tax, remaining loan, and OD surplus returned).
         </p>
         <CashflowChart result={result} />
       </div>
@@ -224,13 +225,19 @@ export function ResultsPanel({ result }: Props) {
           />
           <StatRow label="FD tax" value={formatCompactINR(fd.tax)} />
           <StatRow label="Equity LTCG" value={formatCompactINR(equity.tax)} />
-          <div className="mt-4 rounded-md bg-bg-2 p-3 text-xs text-fg-2">
-            <p className="mb-1 font-medium text-fg-1">How FD / Equity is modeled</p>
+          <div className="mt-4 space-y-2 rounded-md bg-bg-2 p-3 text-xs text-fg-2">
+            <p className="font-medium text-fg-1">How this is modeled</p>
             <p>
-              At each time you'd spend cash on the property (down payment,
-              stamp duty, EMI + maintenance monthly, OD top-ups), the same
-              amount is invested in FD / equity instead. Final value is
-              compounded at the CAGR you entered.
+              <strong className="text-fg-1">FD / Equity:</strong> at each time
+              you'd spend cash on the property, the same amount is invested at
+              the CAGR you entered. FD compounds post-tax (annual TDS + slab).
+              Equity compounds gross; LTCG taken at exit.
+            </p>
+            <p>
+              <strong className="text-fg-1">Rent:</strong> treated as
+              pocketed, not reinvested. If you'd invest rent into equity, the
+              true property return is a bit higher than shown here (XIRR
+              already assumes optimal reinvestment at its own rate).
             </p>
           </div>
         </div>

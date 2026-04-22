@@ -88,8 +88,12 @@ npx gh-pages -d dist
 - LTCG on property is 12.5% flat (new regime, no indexation). Equity LTCG is
   12.5% flat with no ₹1.25L exemption modeled (conservative — actual tax may
   be slightly lower for small gains).
-- FD interest is assumed taxed at the slab rate you specify, levied on total
-  gains at exit (close enough for planning; real FD tax is annual TDS).
+- FD interest is compounded at the post-tax rate (`rate × (1 − slab%)`),
+  reflecting the real-world annual TDS + slab treatment.
+- Equity compounds gross, with LTCG (if toggled) applied once on total gain
+  at exit — realistic for a long-held SIP redeemed in one go.
+- Rent is treated as pocketed, not reinvested. XIRR implicitly assumes
+  reinvestment at its own rate; "final value" does not compound rent.
 - Rent, maintenance, and OD top-ups escalate at the start of each year (not
   mid-year).
 

@@ -227,7 +227,9 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
     if (m > 1 && m % 12 === 1) {
       currentMonthlyRent *= 1 + annualRentIncrease / 100;
       currentAnnualMaintenance *= 1 + annualMaintenanceIncrease / 100;
-      if (loanType === "overdraft" && annualOdDeposit > 0) {
+      // Only top up OD while the loan is still outstanding — parking more is pointless
+      // once the loan is paid off.
+      if (loanType === "overdraft" && annualOdDeposit > 0 && balance > 1e-6) {
         surplus += annualOdDeposit;
         totalOdAdditions += annualOdDeposit;
         outflows.push({
@@ -303,12 +305,16 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
   const netProfitProperty = totalReceivedProperty - totalInvestedProperty;
   const xirrProperty = xirr(propertyCashFlows);
 
-  // --- FD / Equity: invest same outflows, grow at respective rate ---
+  // --- FD: invest same outflows, compound at post-tax rate (annual TDS + slab
+  // is the real-world treatment, so we can't defer tax to exit like equity LTCG).
+  const fdRateAfterTax = fdRate * (1 - fdTaxRate / 100);
+  const fdFinalValue = futureValueOfOutflows(outflows, fdRateAfterTax, terminalT);
+  // Friction from paying tax each year (what you "lose" vs a tax-free FD at same rate)
   const fdGross = futureValueOfOutflows(outflows, fdRate, terminalT);
-  const fdGain = Math.max(0, fdGross - totalInvestedProperty);
-  const fdTax = fdGain * (fdTaxRate / 100);
-  const fdFinalValue = fdGross - fdTax;
+  const fdTax = fdGross - fdFinalValue;
 
+  // --- Equity: LTCG at redemption (realistic since long-hold equity is usually
+  // redeemed once). Compound at gross rate, tax gain at exit.
   const eqGross = futureValueOfOutflows(outflows, equityRate, terminalT);
   const eqGain = Math.max(0, eqGross - totalInvestedProperty);
   const eqTax = applyEquityLtcg ? eqGain * 0.125 : 0;

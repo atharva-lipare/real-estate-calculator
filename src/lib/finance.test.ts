@@ -102,10 +102,21 @@ describe("calculate — sanity checks", () => {
     expect(high.property.xirr).toBeGreaterThan(low.property.xirr);
   });
 
-  it("FD XIRR matches FD rate within taxation", () => {
-    // With no tax, invested at 7.25% should yield ~7.25% XIRR
+  it("FD XIRR matches FD rate when tax is 0", () => {
     const r = calculate({ ...DEFAULT_INPUTS, fdTaxRate: 0 });
     expect(r.fd.xirr).toBeCloseTo(DEFAULT_INPUTS.fdRate / 100, 2);
+  });
+
+  it("FD XIRR matches post-tax rate when tax > 0", () => {
+    const r = calculate(DEFAULT_INPUTS);
+    const expected =
+      (DEFAULT_INPUTS.fdRate * (1 - DEFAULT_INPUTS.fdTaxRate / 100)) / 100;
+    expect(r.fd.xirr).toBeCloseTo(expected, 3);
+  });
+
+  it("FD tax is zero when slab is zero", () => {
+    const r = calculate({ ...DEFAULT_INPUTS, fdTaxRate: 0 });
+    expect(r.fd.tax).toBeCloseTo(0, 2);
   });
 
   it("equity XIRR matches equity rate without LTCG", () => {
@@ -130,5 +141,70 @@ describe("calculate — sanity checks", () => {
     const totalEmiPaid = r.property.emi * DEFAULT_INPUTS.tenureYears * 12;
     expect(r.property.totalInterestPaid).toBeGreaterThan(0);
     expect(r.property.totalInterestPaid).toBeLessThan(totalEmiPaid);
+  });
+
+  it("EMI matches standard formula for ₹80L @ 8.5% for 20y", () => {
+    // Bank EMI tables: 80L at 8.5% for 240 months ≈ ₹69,425
+    const r = calculate(DEFAULT_INPUTS);
+    expect(r.property.emi).toBeGreaterThan(69000);
+    expect(r.property.emi).toBeLessThan(70000);
+  });
+
+  it("stamp duty and selling cost show up in breakdown", () => {
+    const r = calculate(DEFAULT_INPUTS);
+    expect(r.property.stampDuty).toBeCloseTo(
+      (DEFAULT_INPUTS.propertyValue * DEFAULT_INPUTS.stampDutyPct) / 100,
+      0
+    );
+    expect(r.property.sellingCost).toBeGreaterThan(0);
+  });
+
+  it("OD top-ups stop after loan pays off early", () => {
+    // Massive surplus kills the loan fast; top-ups after that should not count.
+    const r = calculate({
+      ...DEFAULT_INPUTS,
+      loanType: "overdraft",
+      initialOdDeposit: 7000000,
+      annualOdDeposit: 500000,
+    });
+    // Loan paid off well before tenure end
+    expect(r.property.monthsToPayoff).toBeLessThan(
+      DEFAULT_INPUTS.tenureYears * 12
+    );
+    // Number of top-ups capped at years-to-payoff (not 20)
+    const yearsToPayoff = Math.ceil(r.property.monthsToPayoff / 12);
+    const maxPossibleTopups = Math.max(0, yearsToPayoff - 1);
+    expect(r.property.totalOdAdditions).toBeLessThanOrEqual(
+      DEFAULT_INPUTS.initialOdDeposit
+        ? 7000000 + 500000 * maxPossibleTopups + 1
+        : Infinity
+    );
+  });
+
+  it("zero loan means no EMI and no interest paid", () => {
+    const r = calculate({
+      ...DEFAULT_INPUTS,
+      loanAmount: 0,
+      propertyValue: 5000000,
+    });
+    expect(r.property.emi).toBe(0);
+    expect(r.property.totalInterestPaid).toBe(0);
+  });
+
+  it("property without rent or appreciation still loses money due to costs", () => {
+    const r = calculate({
+      ...DEFAULT_INPUTS,
+      monthlyRent: 0,
+      annualAppreciation: 0,
+      annualMaintenance: 0,
+    });
+    // No rent, no appreciation → net profit must be negative (just interest + stamp duty eaten)
+    expect(r.property.netProfit).toBeLessThan(0);
+  });
+
+  it("XIRR for property is bounded between -50% and +50% in realistic inputs", () => {
+    const r = calculate(DEFAULT_INPUTS);
+    expect(r.property.xirr).toBeGreaterThan(-0.5);
+    expect(r.property.xirr).toBeLessThan(0.5);
   });
 });
