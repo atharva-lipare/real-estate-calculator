@@ -1,265 +1,98 @@
-# Real Estate Investment Return Calculator
+# Real Estate vs FD vs Equity — Investment Calculator
 
-A comprehensive web application to calculate and compare returns from real estate investments with Fixed Deposits (FD) and Equity Market investments. Includes scenario modeling, interactive charts, and support for different loan types including overdraft options.
+A calculator to compare returning from buying real estate on a loan against
+investing the equivalent cash in fixed deposits or equity. Models EMI,
+overdraft loans, rent income, maintenance, stamp duty, selling costs, LTCG
+taxes, and early sale — and reports XIRR alongside absolute profit.
 
-## Features
+All calculations run in the browser. No backend, no tracking, nothing sent
+anywhere. Share a scenario by copying the URL.
 
-- **Comprehensive Input Options**:
-  - Loan Amount (with Lakhs/Cr display)
-  - Interest Rate
-  - Tenure (Years)
-  - Loan Types: Normal EMI or Overdraft
-  - Property Value
-  - Annual Property Appreciation
-  - Monthly Rent & Annual Rent Increase
-  - Annual Maintenance Costs
-  - FD Rate & Equity Return Rate
-  - Overdraft-specific: Initial Deposit & Annual Deposit Increase
+## Tech
 
-- **Advanced Calculations**:
-  - EMI calculation using standard formula
-  - Property appreciation compounding
-  - Rent income with annual increases
-  - Loan interest (normal or overdraft with surplus)
-  - SIP calculations for FD/Equity comparisons
-  - Cash flow analysis over time
-
-- **Visualizations**:
-  - Bar chart comparing total returns
-  - Line chart for yearly cash flows
-  - Responsive design with mobile support
-
-- **Technical Features**:
-  - Flask backend with CORS support
-  - Vue.js 3 frontend with Vite
-  - Chart.js for data visualization
-  - Systematic Investment Plan (SIP) formulas
-  - Error handling and loading states
-
-## Tech Stack
-
-### Backend
-- **Python 3.8+**
-- **Flask** - Web framework
-- **Flask-CORS** - Cross-origin support
-- **SQLAlchemy** - Database ORM (future use)
-
-### Frontend
-- **Vue.js 3** - Reactive framework
-- **Vite** - Build tool
-- **Chart.js** - Data visualization
-- **Axios** - HTTP client
-
-## Installation & Setup
-
-### Prerequisites
-- Python 3.8 or higher
-- Node.js 18+ (for Vite 4 compatibility)
-- Git
-
-### Quick Start
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/atharva-lipare/real-estate-calculator.git
-   cd real-estate-calculator
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   make install
-   # or manually:
-   # cd backend && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
-   # cd ../frontend && npm install
-   ```
-
-3. **Run the application**:
-   ```bash
-   make run
-   # or ./run.sh
-   ```
-
-4. **Access the app**:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-
-### Manual Setup
-
-**Backend Setup:**
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
-```
-
-**Frontend Setup:**
-```bash
-cd frontend
-npm install
-npm run build
-cd dist
-python3 -m http.server 3000
-```
-
-## Usage
-
-1. **Input Parameters**: Fill in loan details, property metrics, and investment rates
-2. **Select Loan Type**: Choose between Normal EMI or Overdraft
-3. **Adjust Scenarios**: Use sliders for appreciation and rent increase rates
-4. **Calculate**: Click calculate to see results
-5. **View Results**:
-   - Bar chart comparing total returns
-   - Cash flow line chart
-   - Detailed breakdowns with Indian Rupee formatting
-
-## API Endpoints
-
-### POST /calculate
-Calculates investment returns based on input parameters.
-
-**Request Body:**
-```json
-{
-  "loan_amount": 8000000,
-  "interest_rate": 8.0,
-  "tenure_years": 20,
-  "loan_type": "normal",
-  "property_value": 10000000,
-  "annual_appreciation": 7.5,
-  "monthly_rent": 30000,
-  "annual_rent_increase": 10,
-  "annual_maintenance": 35000,
-  "fd_rate": 7.9,
-  "equity_rate": 12,
-  "initial_deposit": 1000000,
-  "annual_deposit_increase": 20
-}
-```
-
-**Response:**
-```json
-{
-  "property": {
-    "total_return": 20775000,
-    "total_investment": 18662006,
-    "total_interest_paid": 866206,
-    "cash_flows": [...]
-  },
-  "fd": {
-    "return": 12345678,
-    "investment": 24000000
-  },
-  "equity": {
-    "return": 34567890,
-    "investment": 24000000
-  },
-  "emi": 69260,
-  "down_payment": 2000000
-}
-```
-
-## Key Formulas
-
-### EMI Calculation
-```
-EMI = P * r * (1+r)^n / ((1+r)^n - 1)
-```
-Where P = Principal, r = monthly rate, n = months
-
-### SIP (FD/Equity Returns)
-```
-FV = P * [((1+r)^n - 1) / r]
-```
-Where P = monthly investment, r = monthly rate, n = months
-
-### Property Appreciation
-```
-Final Value = Initial Value * (1 + Rate)^Years
-```
-
-### Overdraft Interest
-```
-Interest = max(0, (Remaining Loan - OD Surplus) * Rate / 100)
-```
+- Vite + React 18 + TypeScript
+- Tailwind CSS (dark / light)
+- Recharts for charts
+- Vitest for math unit tests
 
 ## Development
 
-### Project Structure
-```
-calculator-project/
-├── backend/
-│   ├── app.py              # Flask application
-│   ├── requirements.txt    # Python dependencies
-│   └── venv/               # Virtual environment
-├── frontend/
-│   ├── src/
-│   │   ├── App.vue         # Main Vue component
-│   │   └── components/     # Vue components
-│   ├── dist/               # Built files
-│   └── package.json        # Node dependencies
-├── run.sh                  # Quick start script
-├── Makefile                # Build automation
-└── README.md
-```
-
-### Building for Production
-
-**Frontend:**
 ```bash
-cd frontend
-npm run build
+npm install
+npm run dev          # http://localhost:5173
+npm test             # run math tests
+npm run build        # production build → dist/
 ```
 
-**Backend:**
-Use Gunicorn or similar for production:
-```bash
-gunicorn -w 4 app:app
-```
+## How the comparison works
+
+When you buy property, you have cash outflows at specific times:
+
+1. Upfront: down payment + stamp duty + (overdraft surplus, if applicable)
+2. Monthly: EMI + maintenance
+3. Annually (overdraft only): top-up to OD surplus
+
+You also have inflows:
+
+1. Monthly: rent
+2. At exit: sale proceeds − selling cost − remaining loan − LTCG tax (+
+   overdraft surplus returned)
+
+**Property XIRR** = the annualized return across all these cash flows.
+
+**FD / Equity comparison** takes _the same outflows_ and invests them at the
+chosen CAGR instead. The final value is computed by compounding each
+investment until exit, then applying tax. This gives the true opportunity
+cost: "if you'd put that same cash into FD / equity at the same times, what
+would you have?"
 
 ## Deployment
 
-### Online Deployment
-1. **Frontend**: Deploy `frontend/dist` to Netlify/Vercel
-2. **Backend**: Deploy to Railway/Render/Heroku
-3. **Update API URLs**: Change localhost to deployed backend URL
+The output of `npm run build` is a pure static site in `dist/`. It works on
+any static host.
 
-### Local Deployment
-- Use Docker for containerized deployment
-- Nginx for frontend serving
-- Gunicorn for backend
+### Vercel (recommended)
 
-## Mobile/Android Support
+1. Push to GitHub.
+2. Go to [vercel.com/new](https://vercel.com/new), import the repo.
+3. Framework preset: Vite. Build command: `npm run build`. Output directory:
+   `dist`.
+4. Click Deploy.
 
-The app is responsive and works on mobile browsers. For local Android development:
+### Netlify
 
-1. Install Termux
-2. Install Python and Node.js in Termux
-3. Clone repo and run `make install && make run`
-4. Access via browser at `localhost:3000`
+1. Push to GitHub.
+2. Go to Netlify → Add new site → Import from Git.
+3. Build command: `npm run build`. Publish directory: `dist`.
 
-## Contributing
+### Cloudflare Pages
 
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature-name`
-3. Commit changes: `git commit -am 'Add feature'`
-4. Push to branch: `git push origin feature-name`
-5. Create Pull Request
+1. Connect the repo.
+2. Framework preset: Vite. Build command: `npm run build`. Output: `dist`.
 
-## Future Enhancements
+### GitHub Pages
 
-- User authentication and saved calculations
-- Real-time API integrations for rates
-- Advanced risk analysis and Monte Carlo simulations
-- PDF report generation
-- Multi-currency support
-- Comparative analysis with other investments
+```bash
+npm run build
+npx gh-pages -d dist
+```
+
+## Assumptions & caveats
+
+- Loan interest uses the standard EMI formula with monthly compounding on a
+  nominal annual rate.
+- FD and equity rates are treated as **effective annual CAGR** (so entering
+  12% yields 12% XIRR, not 12.68%).
+- Overdraft model follows SBI MaxGain / HDFC SmartHome: interest is charged
+  on `max(0, outstanding − surplus)` each month; surplus is returned at exit.
+- LTCG on property is 12.5% flat (new regime, no indexation). Equity LTCG is
+  12.5% flat with no ₹1.25L exemption modeled (conservative — actual tax may
+  be slightly lower for small gains).
+- FD interest is assumed taxed at the slab rate you specify, levied on total
+  gains at exit (close enough for planning; real FD tax is annual TDS).
+- Rent, maintenance, and OD top-ups escalate at the start of each year (not
+  mid-year).
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues or questions, please open a GitHub issue or contact the maintainers.
+MIT

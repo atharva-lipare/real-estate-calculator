@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-0: 10 10 10;
+  --bg-1: 22 22 24;
+  --bg-2: 32 32 36;
+  --fg-0: 240 240 240;
+  --fg-1: 170 170 172;
+  --fg-2: 120 120 124;
+  --brand: 56 178 172;
+  --accent: 147 197 253;
+  --positive: 74 222 128;
+  --negative: 248 113 113;
+  --border: 38 38 42;
+  --shadow: 0 0 0;
+}
+
+.light {
+  --bg-0: 252 252 252;
+  --bg-1: 255 255 255;
+  --bg-2: 245 245 247;
+  --fg-0: 15 15 17;
+  --fg-1: 75 75 80;
+  --fg-2: 130 130 135;
+  --brand: 13 148 136;
+  --accent: 37 99 235;
+  --positive: 21 128 61;
+  --negative: 220 38 38;
+  --border: 228 228 231;
+  --shadow: 0 0 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Native number input arrows — hide for cleaner UI */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  background: rgb(var(--bg-2));
+  height: 4px;
+  border-radius: 2px;
+}
+input[type="range"]::-moz-range-track {
+  background: rgb(var(--bg-2));
+  height: 4px;
+  border-radius: 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  margin-top: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: rgb(var(--brand));
+  border: 2px solid rgb(var(--bg-0));
+  transition: transform 0.15s ease;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: rgb(var(--brand));
+  border: 2px solid rgb(var(--bg-0));
+  transition: transform 0.15s ease;
+}
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+/* Thin scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--bg-2));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--border));
+}
