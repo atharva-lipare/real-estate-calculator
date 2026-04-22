@@ -143,11 +143,11 @@ describe("calculate — sanity checks", () => {
     expect(r.property.totalInterestPaid).toBeLessThan(totalEmiPaid);
   });
 
-  it("EMI matches standard formula for ₹80L @ 8.5% for 20y", () => {
-    // Bank EMI tables: 80L at 8.5% for 240 months ≈ ₹69,425
+  it("EMI matches standard formula for ₹80L @ 7.5% for 20y", () => {
+    // Bank EMI tables: 80L at 7.5% for 240 months ≈ ₹64,447
     const r = calculate(DEFAULT_INPUTS);
-    expect(r.property.emi).toBeGreaterThan(69000);
-    expect(r.property.emi).toBeLessThan(70000);
+    expect(r.property.emi).toBeGreaterThan(64000);
+    expect(r.property.emi).toBeLessThan(65000);
   });
 
   it("stamp duty and selling cost show up in breakdown", () => {

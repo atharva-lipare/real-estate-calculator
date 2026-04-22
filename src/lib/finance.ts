@@ -392,7 +392,7 @@ export function calculate(inputs: CalculatorInputs): CalculationResult {
 
 export const DEFAULT_INPUTS: CalculatorInputs = {
   loanAmount: 8000000,
-  interestRate: 8.5,
+  interestRate: 7.5,
   tenureYears: 20,
   loanType: "normal",
   initialOdDeposit: 1000000,
@@ -406,7 +406,7 @@ export const DEFAULT_INPUTS: CalculatorInputs = {
   stampDutyPct: 6,
   sellingCostPct: 2,
   applyPropertyLtcg: false,
-  fdRate: 7.25,
+  fdRate: 6.9,
   equityRate: 12,
   fdTaxRate: 30,
   applyEquityLtcg: false,
