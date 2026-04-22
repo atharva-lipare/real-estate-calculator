@@ -63,12 +63,28 @@ would you have?"
 The output of `npm run build` is a pure static site in `dist/`. It works on
 any static host.
 
-### Vercel (recommended)
+### GitHub Pages (free, recommended)
+
+A GitHub Actions workflow is already set up at
+`.github/workflows/deploy.yml`. One-time setup:
+
+1. Push to GitHub (on `master`).
+2. In the repo settings → **Pages** → Source: **GitHub Actions**.
+3. The workflow builds + deploys on every push to `master`.
+
+Your site will live at
+`https://<your-username>.github.io/<repo-name>/`.
+
+The workflow passes `VITE_BASE=/<repo-name>/` so Vite emits the correct
+asset paths for the sub-path hosting.
+
+### Vercel
 
 1. Push to GitHub.
 2. Go to [vercel.com/new](https://vercel.com/new), import the repo.
 3. Framework preset: Vite. Build command: `npm run build`. Output directory:
-   `dist`.
+   `dist`. Leave env vars empty — Vercel serves from root, so the default
+   `base: "/"` applies.
 4. Click Deploy.
 
 ### Netlify
@@ -81,13 +97,6 @@ any static host.
 
 1. Connect the repo.
 2. Framework preset: Vite. Build command: `npm run build`. Output: `dist`.
-
-### GitHub Pages
-
-```bash
-npm run build
-npx gh-pages -d dist
-```
 
 ## Assumptions & caveats
 
