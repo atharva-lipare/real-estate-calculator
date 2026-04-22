@@ -17,11 +17,23 @@ anywhere. Share a scenario by copying the URL.
 
 ## Development
 
+Prerequisites: Node 18+ (tested on 20 and 24).
+
 ```bash
 npm install
-npm run dev          # http://localhost:5173
-npm test             # run math tests
+npm run dev          # hot-reloading dev server → http://localhost:5173
+npm test             # run the math unit tests (vitest)
 npm run build        # production build → dist/
+npm run preview      # serve the production build locally
+```
+
+### Stopping the dev server
+
+If you started it in the foreground, `Ctrl+C` in that terminal. If it's
+running in the background (or you've lost the terminal):
+
+```bash
+kill $(lsof -t -i:5173)
 ```
 
 ## How the comparison works
